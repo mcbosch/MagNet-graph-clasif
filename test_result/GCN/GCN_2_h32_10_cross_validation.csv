@@ -1,0 +1,16 @@
+dataset,readout,fold 1,fold 2,fold 3,fold 4,fold 5,fold 6,fold 7,fold 8,fold 9,fold 10,mean of acc,std of acc,time per epochs
+PROTEINS,avg,59.61,68.71,64.16,6.434671708797579,0.795
+dataset,readout,fold 1,fold 2,fold 3,fold 4,fold 5,fold 6,fold 7,fold 8,fold 9,fold 10,mean of acc,std of acc,time per epochs
+PROTEINS,avg,63.07,69.27,69.81,67.38333333333333,3.7452013742031722,1.05
+dataset,readout,fold 1,fold 2,fold 3,fold 4,fold 5,fold 6,fold 7,fold 8,fold 9,fold 10,mean of acc,std of acc,time per epochs
+PROTEINS,avg,59.61,59.53,59.57,0.056568542494922595,0.8300000000000001
+dataset,readout,fold 1,fold 2,fold 3,fold 4,fold 5,fold 6,fold 7,fold 8,fold 9,fold 10,mean of acc,std of acc,time per epochs
+PROTEINS,avg,59.61,59.53,59.57,0.056568542494922595,1.02
+dataset,readout,fold 1,fold 2,fold 3,fold 4,fold 5,fold 6,fold 7,fold 8,fold 9,fold 10,mean of acc,std of acc,time per epochs
+PROTEINS,avg,59.61,59.53,59.57,0.056568542494922595,0.965
+dataset,readout,fold 1,fold 2,fold 3,fold 4,fold 5,fold 6,fold 7,fold 8,fold 9,fold 10,mean of acc,std of acc,time per epochs
+PROTEINS,avg,59.61,59.53,59.57,0.056568542494922595,0.87
+dataset,readout,fold 1,fold 2,fold 3,fold 4,fold 5,fold 6,fold 7,fold 8,fold 9,fold 10,mean of acc,std of acc,time per epochs
+PROTEINS,avg,59.61,59.53,59.57,0.056568542494922595,0.865
+dataset,readout,fold 1,fold 2,fold 3,fold 4,fold 5,fold 6,fold 7,fold 8,fold 9,fold 10,mean of acc,std of acc,time per epochs
+PROTEINS,avg,68.19,71.43,66.31,68.64333333333333,2.5899292139619083,2.8466666666666667

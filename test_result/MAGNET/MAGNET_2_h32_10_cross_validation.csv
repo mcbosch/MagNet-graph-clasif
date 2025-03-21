@@ -1,0 +1,2 @@
+dataset,readout,fold 1,fold 2,fold 3,fold 4,fold 5,fold 6,fold 7,fold 8,fold 9,fold 10,mean of acc,std of acc,time per epochs
+PROTEINS,complex_avg,60.92,59.57,58.22,59.57,1.3500000000000014,50.74
