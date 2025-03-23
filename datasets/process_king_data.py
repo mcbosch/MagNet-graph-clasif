@@ -105,7 +105,7 @@ def process_raw_data(mdag = False):
             # Escrivim a quin graf pertany el node
             for node in nodes:
                 doc_graph_indicator.write(f'{number_graphs}\n')
-                doc_node_labels.write(f'0\n')
+                doc_node_labels.write(f'1\n')
                 number_nodes += 1
 
             
@@ -115,6 +115,10 @@ def process_raw_data(mdag = False):
     sys.stdout.write(f"\r{f}")
     sys.stdout.write("\rData processed!")
     sys.stdout.flush()
+    doc_A.close()
+    doc_graph_indicator.close()
+    doc_graph_labels.close()
+    doc_node_labels.close()
 
 
 process_raw_data()

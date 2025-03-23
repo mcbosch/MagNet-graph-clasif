@@ -100,6 +100,12 @@ class DataReader():
                                                        
         print('complete to build targets list')
         
+
+        #######################################################
+        ############### !!!!!!!!!!!!!!!!!!!!!!!!!! ############
+        #######################################################
+
+        ## Aixo pareix important pels node features
         features, n_edges, degrees = [], [], []
         for sample_id, adj in enumerate(data['adj_list']):
             N = len(adj) # Number of nodes
@@ -108,8 +114,8 @@ class DataReader():
             n = np.sum(adj) # Total sum of edges
             n_edges.append( int(n / 2) ) # Undirected edges, so need to divide by 2
             if not np.allclose(adj, adj.T):
-                print(sample_id, 'not symmetric')
-            degrees.extend(list(np.sum(adj, 1)))
+                pass
+            degrees.extend(list(np.sum(adj, 1))) # En el cas de dirigit es d_in d_out
             features.append(np.array(data['features'][sample_id]))
                         
         # Create features over graphs as one-hot vectors for each node
@@ -469,10 +475,10 @@ class GraphData(torch.utils.data.Dataset):
         N_nodes = self.adj_list[index].shape[0]
         graph_support = np.zeros(self.N_nodes_max)
         graph_support[:N_nodes] = 1
-        breakpoint()
+
         return self.nested_list_to_torch([self.pad(self.features_onehot[index].copy(), self.N_nodes_max),  # Node_features
                                     self.pad(self.adj_list[index], self.N_nodes_max, self.N_nodes_max),  # Adjacency matrix
-                                    self.pad(self.imag_lapl[index], self.N_nodes_max, self.N_nodes_max), # Imag part
+                                    torch.tensor([0]),#self.pad(self.imag_lapl[index], self.N_nodes_max, self.N_nodes_max), # Imag part
                                     graph_support,  # Mask with values of 0 for dummy (zero padded) nodes, otherwise 1 
                                     N_nodes,
                                     int(self.labels[index]),
