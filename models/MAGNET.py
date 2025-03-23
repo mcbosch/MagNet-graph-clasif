@@ -32,12 +32,11 @@ class MagNet(nn.Module):
 
   
     def forward(self, data):
-        x, L = data[:2]
+
+        x, L_real, L_imag = data[:3]
         sizes = x.size()
         x_real = x 
         x_imag = torch.zeros(sizes[0],sizes[1],sizes[2])
-        L_real = L.real
-        L_imag = (L + torch.zeros((L.size()[0], L.size()[1], L.size()[2]))*1.0j).imag
 
         for i in range(self.n_layer):
             # Graph convolution layer

@@ -150,24 +150,14 @@ else:
   
 print('Using device in train process:', device)
 
-#-------------------------------------- Fins aquí okey
-#   Coses pendents a entendre:
-#       o Què són els threads
-#       o Recompte dels paràmetres per entrenar
-#       o Funció entrenament
-
-
-
 for dataset_name in args.dataset_list:
     print('-'*50)
     s = dataset_name
     print('Target dataset:', '\033[1;92m%s\033[0m' %s)
 
-    # Build graph data reader: IMDB-BINARY, IMDB-MULTI, ...
     datareader = DataReader(data_dir='./datasets/%s/' % dataset_name.upper(),
                         rnd_state=np.random.RandomState(args.seed),
                         folds=args.n_folds,           
-                        use_cont_node_attr=False,
                         )
     # Prenem un model
     for model_name in args.model_list:
@@ -249,7 +239,7 @@ for dataset_name in args.dataset_list:
             
             ACC_per_Epoch = []
             # Train function
-            def train(train_loader):
+            def train(train_loader, model_name_ = ''):
                 total_time_iter = 0
 
                 # train() és una funció heredada de nn.Module
@@ -272,7 +262,7 @@ for dataset_name in args.dataset_list:
                
                     output = model(data)
 
-                    loss = loss_fn(output, data[4])
+                    loss = loss_fn(output, data[5])
                     loss.backward()
                     optimizer.step()
                     
@@ -301,12 +291,12 @@ for dataset_name in args.dataset_list:
                         data[i] = data[i].to(device)
 
                     output = model(data)
-                    loss = loss_fn(output, data[4], reduction='sum')
+                    loss = loss_fn(output, data[5], reduction='sum')
                     test_loss += loss.item()
                     n_samples += len(output)
                     pred = output.detach().cpu().max(1, keepdim=True)[1]
     
-                    correct += pred.eq(data[4].detach().cpu().view_as(pred)).sum().item()
+                    correct += pred.eq(data[5].detach().cpu().view_as(pred)).sum().item()
     
                 time_iter = time.time() - start
     

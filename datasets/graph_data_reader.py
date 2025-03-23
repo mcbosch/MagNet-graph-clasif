@@ -19,20 +19,23 @@ References: https://github.com/bknyaz/graph_nn
 
 class DataReader():
 
-    '''
-    Class to read the txt files containing all data of the dataset
-    '''
     def __init__(self,
-                 data_dir,  # Folder with txt files
+                 data_dir, 
                  rnd_state=None,
-                 use_cont_node_attr=False,  # Use or not additional float valued node attributes available in some datasets
                  folds=10):
+        
+        r"""
+        Cream un objecte DataReader que consta de:
+            > data_dir: Carpeta on es troben els arxius
+            > rnd_state: Llavor per tots els processos aleatoris
+            > data: diccionari amb la informació de la base de dades
+            > folds
+        """
 
         self.data_dir = data_dir
 
         # Definim un rnd_state per recuperar resultats
         self.rnd_state = np.random.RandomState() if rnd_state is None else rnd_state
-        self.use_cont_node_attr = use_cont_node_attr
 
         """
         Lletgim els arxius que estan en el dataset DS:
@@ -47,9 +50,8 @@ class DataReader():
         
         data = {}
         
-        #####   READ ADJ
         """
-        Cridam la funció read_graph_nodes_relations amb  argument una llistade DS_graph_indicator.txt
+        Cridam la funció read_graph_nodes_relations amb  argument DS_graph_indicator.txt
         Aquesta guarda en nodes un diccionari on per cada node s'indica el graf que pertany i en graphs
         un diccionari on a cada graph li assigna el seu conjunt de nodes en forma de llista
         """
@@ -98,10 +100,6 @@ class DataReader():
                                                        
         print('complete to build targets list')
         
-        if self.use_cont_node_attr:
-            data['attr'] = self.read_node_features(list(filter(lambda f: f.find('node_attributes') >= 0, files))[0], 
-                                                   nodes, graphs, fn=lambda s: np.array(list(map(float, s.strip().split(',')))))
-        
         features, n_edges, degrees = [], [], []
         for sample_id, adj in enumerate(data['adj_list']):
             N = len(adj) # Number of nodes
@@ -124,12 +122,7 @@ class DataReader():
             feature_onehot = np.zeros((len(x), features_dim))
             for node, value in enumerate(x):
                 feature_onehot[node, value - features_min] = 1
-            if self.use_cont_node_attr:
-                feature_onehot = np.concatenate((feature_onehot, np.array(data['attr'][i])), axis=1)
             features_onehot.append(feature_onehot)
-
-        if self.use_cont_node_attr:
-            features_dim = features_onehot[0].shape[1]
             
         shapes = [len(adj) for adj in data['adj_list']]
         labels = data['targets'] # Graph class labels
@@ -173,6 +166,10 @@ class DataReader():
         for fold in range(folds):
             splits.append({'train': train_ids[fold],
                            'test': test_ids[fold]})
+        #################################
+        ####### !!!!!!!!!!!!!!! #########
+        #################################
+        # Aquests els feim servir?
 
         data['features_onehot'] = features_onehot
         data['targets'] = labels
@@ -180,12 +177,6 @@ class DataReader():
         data['N_nodes_max'] = np.max(shapes)  # Max number of nodes
         data['features_dim'] = features_dim
         data['n_classes'] = n_classes
-
-        # Make neighbor dictionary
-        #data['neighbor_dic_list'] = self.get_neighbor_dic_list(data['adj_list'], data['N_nodes_max'])
-        
-        #print('complete to build neighbor dictionary list')
-        
         self.data = data
 
     def split_ids(self, ids_all, rnd_state=None, folds=10):
@@ -214,13 +205,25 @@ class DataReader():
         Return:
             list 
         """
+
         with open(pjoin(self.data_dir, fpath), 'r') as f:
             lines = f.readlines()
         data = [line_parse_fn(s) if line_parse_fn is not None else s for s in lines]
         return data
     
-    # Funció per lletgir la matriu d'adjecència
     def read_graph_adj(self, fpath, nodes, graphs):
+        r"""
+        Aquesta funcio llegeix la matriu d'adjacencia i la retorna en format llista.
+
+        Args:
+            fpath -> on es troba l'arxiu + nom
+            nodes -> diccionari node -> graf
+            graphs -> diccionari graf -> nodes
+
+        Return:
+            Llista de matrius d'adjacencia en format np.matrix.
+        """
+
         edges = self.parse_txt_file(fpath, line_parse_fn=lambda s: s.split(','))
         adj_dict = {}
         for edge in edges:
@@ -228,25 +231,30 @@ class DataReader():
             node2 = int(edge[1].strip()) - 1
             graph_id = nodes[node1]
 
-            # La función assert 
+            # Verificam que els dos nodes són del mateix graf
             assert graph_id == nodes[node2], ('invalid data', graph_id, nodes[node2])
             if graph_id not in adj_dict:
+                # Hem de definir un nou graf
                 n = len(graphs[graph_id])
                 adj_dict[graph_id] = np.zeros((n, n))
+
+            # Calculam el índex on estan ubicats el nostre node            
             ind1 = np.where(graphs[graph_id] == node1)[0]
             ind2 = np.where(graphs[graph_id] == node2)[0]
+
             assert len(ind1) == len(ind2) == 1, (ind1, ind2)
             adj_dict[graph_id][ind1, ind2] = 1
-            
+
+        # Retornam les matrius d'adjacència en format llista 
         adj_list = [adj_dict[graph_id] for graph_id in sorted(list(graphs.keys()))]
         
         return adj_list
         
-    
     def read_graph_nodes_relations(self, fpath):
         r'''
         Funció per lletgir graph_indicator.txt retornant dos diccionaris.
-        El primer node_id -> graph_id i el segon graph_id -> list(nodes_id)
+        El primer (nodes) node_id -> graph_id 
+        i el segon (graphs) graph_id -> list(nodes_id)
         '''
         graph_ids = self.parse_txt_file(fpath, line_parse_fn=lambda s: int(s.rstrip()))
         nodes, graphs = {}, {}
@@ -260,30 +268,52 @@ class DataReader():
             graphs[graph_id] = np.array(graphs[graph_id])
         return nodes, graphs
 
- 
     def read_node_features(self, fpath, nodes, graphs, fn):
         r'''
         Funció que llegeix node_attributes.txt i retorna una llista de 
         llistes dels atributs dels nodes. És a dir, els atributs del graf
         i-èssim estan en la posició i-èssima d'aquesta llista (si indexam 
         els grafs desde 0)
+
+        Args:
+            fpath -> on es troba l'arxiu DS_node_attributes o features?
+            nodes -> diccionari node -> graf
+            graphs -> diccionari graf -> nodes
+            fn -> funció separació features
+        Returns:
+            Llista de llistes amb els atributs dels nodes de cada graf. 
         '''
+        # Lletgim l'arxiu dels node features
         node_features_all = self.parse_txt_file(fpath, line_parse_fn=fn)
+
+        # Cream un diccionario on per cada key (graph_id) li associam una llista de node_features
         node_features = {}
         
         for node_id, x in enumerate(node_features_all):
             graph_id = nodes[node_id]
             if graph_id not in node_features:
                 node_features[graph_id] = [ None ] * len(graphs[graph_id])
+
+            # Lletgim l'índex del node en el seu graf
             ind = np.where(graphs[graph_id] == node_id)[0]
             assert len(ind) == 1, ind
             assert node_features[graph_id][ind[0]] is None, node_features[graph_id][ind[0]]
+
+            # Afegim en aquella posició el node feature que estava en el arxiu
             node_features[graph_id][ind[0]] = x
         node_features_lst = [node_features[graph_id] for graph_id in sorted(list(graphs.keys()))]
         return node_features_lst
 
-    #
     def get_node_features_degree(self, adj_list):
+        r"""
+        Lletgeix els graus de cada node
+
+        Args:
+            adj_list -> llista amb les matrius d'adjacència
+        
+        Return:
+            Una llista de np.arrays dels graus de cada node 
+        """
         node_features_list = []
  
         for adj in adj_list:
@@ -294,9 +324,15 @@ class DataReader():
             node_features_list.append(np.array(sub_list))
 
         return node_features_list
-
-    #      
+     
     def get_max_neighbor(self, degree_list):
+        """
+        Args:
+            degree_list -> llista de graus dels nodes 
+            (get_node_features)
+        Return:
+            Una llista del grau maxim en cada graf
+        """
         max_neighbor_list = []
         
         for degrees in degree_list:
@@ -304,8 +340,14 @@ class DataReader():
 
         return max_neighbor_list
 
-    #
+    # Aquesta funció és un poc inutil ja que amb graph_nodes_relations ja ho podem treure
     def get_node_count_list(self, adj_list):
+        r"""
+        Args:
+            adj_list -> llista de matrius d'adjacència
+        Return:
+            Llista de longituds grafs
+        """
         node_count_list = []
         
         for adj in adj_list:
@@ -313,8 +355,14 @@ class DataReader():
                         
         return node_count_list
 
-    #
     def get_edge_matrix_list(self, adj_list):
+        r"""
+        Args:
+            adj_list -> llista de les matrius d'adjacència
+        Returns:
+            edge_matrix_list -> llista de llistes de les arestes
+            max_edge_matrix -> maxim nombre d'arestes
+        """
         edge_matrix_list = []
         max_edge_matrix = 0
         
@@ -330,30 +378,19 @@ class DataReader():
                         
         return edge_matrix_list, max_edge_matrix
 
-    #
     def get_edge_matrix_count_list(self, edge_matrix_list):
+        r"""
+        Args:
+            edge_matrix_list -> llista de llistes de les arestes
+        Return:
+            llista de nombre d'arestes
+        """
         edge_matrix_count_list = []
         
         for edge_matrix in edge_matrix_list:
             edge_matrix_count_list.append(len(edge_matrix))
                         
         return edge_matrix_count_list
-
-    # 
-    def get_neighbor_dic_list(self, adj_list, N_nodes_max):
-        neighbor_dic_list = []
-        
-        for adj in adj_list:
-            neighbors = []
-            for i, row in enumerate(adj):
-                idx = np.where(row == 1.0)[0].tolist()
-                idx = np.pad(idx, (0, N_nodes_max - len(idx)), 'constant', constant_values=0)
-                neighbors.append(idx)
-            for a in range(i, N_nodes_max - 1):
-                neighbors.append(np.array([0]*136))
-            neighbor_dic_list.append(np.array(neighbors))
-        
-        return neighbor_dic_list    
 
 
 class GraphData(torch.utils.data.Dataset):
@@ -381,7 +418,8 @@ class GraphData(torch.utils.data.Dataset):
         self.edge_matrix_list = copy.deepcopy([data['edge_matrix_list'][i] for i in self.idx])
         self.node_count_list = copy.deepcopy([data['node_count_list'][i] for i in self.idx])
         self.edge_matrix_count_list = copy.deepcopy([data['edge_matrix_count_list'][i] for i in self.idx])
-        
+        self.imag_lapl = None
+        self.imag2 = 'hola!'
 
         
 
@@ -418,6 +456,10 @@ class GraphData(torch.utils.data.Dataset):
                 #data[i] = list_to_torch(data[i])
         return data
         
+    r"""
+    Les funcions __len__ i __getitem__ son necessàries per 
+    poder definir posteriorment un loader.
+    """
     def __len__(self):
         return len(self.labels)
 
@@ -427,9 +469,10 @@ class GraphData(torch.utils.data.Dataset):
         N_nodes = self.adj_list[index].shape[0]
         graph_support = np.zeros(self.N_nodes_max)
         graph_support[:N_nodes] = 1
-        
+        breakpoint()
         return self.nested_list_to_torch([self.pad(self.features_onehot[index].copy(), self.N_nodes_max),  # Node_features
                                     self.pad(self.adj_list[index], self.N_nodes_max, self.N_nodes_max),  # Adjacency matrix
+                                    self.pad(self.imag_lapl[index], self.N_nodes_max, self.N_nodes_max), # Imag part
                                     graph_support,  # Mask with values of 0 for dummy (zero padded) nodes, otherwise 1 
                                     N_nodes,
                                     int(self.labels[index]),
@@ -440,8 +483,11 @@ class GraphData(torch.utils.data.Dataset):
 
     def ad2MagLapl(self, q,  normalized = True):
         N = len(self.adj_list)
+        self.imag_lapl = []
         for i in range(N):
-            self.adj_list[i] = GraphData.ad2MagL(self.adj_list[i], q,  normalized)
+            real, imag = GraphData.ad2MagL(self.adj_list[i], q,  normalized)
+            self.adj_list[i] = real
+            self.imag_lapl.append(imag)
 
     @staticmethod
     def ad2MagL(Adj, q, normalized):
@@ -456,7 +502,7 @@ class GraphData(torch.utils.data.Dataset):
         if normalized:
             L_n = I - (np.matmul(np.matmul(D_norm, As),D_norm))*T
             L_n_real, L_n_imag = L_n.real, L_n.imag 
-            return L_n_real
+            return L_n_real, L_n_imag
         else:
             L =  np.diag(D) -  As*T 
             return L
