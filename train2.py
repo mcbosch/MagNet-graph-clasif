@@ -7,7 +7,7 @@ import numpy as np
 import time
 import statistics
 import matplotlib.pyplot as plt
-
+import os
 
 # Carregam els paquets necessaris per manipulars els grafs i les GNNs
 import torch
@@ -167,32 +167,33 @@ for dataset_name in args.dataset_list:
         print('-'*25)
         
         # Build graph classification models
-        if model_name == 'GCN':
-            model = GCN(n_feat=datareader.data['features_dim'],
-                    n_class=datareader.data['n_classes'],
-                    n_layer=args.n_agg_layer,
-                    agg_hidden=args.agg_hidden,
-                    fc_hidden=args.fc_hidden,
-                    dropout=args.dropout,
-                    readout=readout_name,
-                    device=device).to(device)
-        elif model_name == 'MAGNET':
-            model = MagNet(n_feat=datareader.data['features_dim'],
-                    n_class=datareader.data['n_classes'],
-                    n_layer=args.n_agg_layer,
-                    agg_hidden=args.agg_hidden,
-                    fc_hidden=args.fc_hidden,
-                    dropout=args.dropout,
-                    readout=readout_name,
-                    device=device).to(device)                                                  
-        print(model)
-        print('Readout:', readout_name)
+        
         
         # Train & test each fold
         acc_folds = []
         time_folds = []
 
         for fold_id in range(args.n_folds):
+            if model_name == 'GCN':
+              model = GCN(n_feat=datareader.data['features_dim'],
+                      n_class=datareader.data['n_classes'],
+                      n_layer=args.n_agg_layer,
+                      agg_hidden=args.agg_hidden,
+                      fc_hidden=args.fc_hidden,
+                      dropout=args.dropout,
+                      readout=readout_name,
+                      device=device).to(device)
+            elif model_name == 'MAGNET':
+                model = MagNet(n_feat=datareader.data['features_dim'],
+                        n_class=datareader.data['n_classes'],
+                        n_layer=args.n_agg_layer,
+                        agg_hidden=args.agg_hidden,
+                        fc_hidden=args.fc_hidden,
+                        dropout=args.dropout,
+                        readout=readout_name,
+                        device=device).to(device)                                                  
+            print(model)
+            print('Readout:', readout_name)
             print('\nFOLD', fold_id)
             loaders = []
             for split in ['train', 'test']:
@@ -323,10 +324,19 @@ for dataset_name in args.dataset_list:
             time_folds.append(round(total_time/args.epochs,2))
             
             plt.plot(list(range(args.epochs)), ACC_per_Epoch)
-            plt.xlim(0, 1)
+            plt.xlim(0, 100)
+            plt.ylim(0, 100)
 
             plt.xlabel("epochs")
             plt.ylabel("acc")
+            
+            save = os.path.dirname(os.path.abspath(__file__))
+            os.makedirs(save + f'\\plots_{model_name}', exist_ok = True)
+
+            ruta = save + f'\\plots_{model_name}\\fold_{fold_id}'
+            plt.savefig(ruta)
+            plt.close()
+
             # Save model
             if args.save_model:
                 print('Save model ...')

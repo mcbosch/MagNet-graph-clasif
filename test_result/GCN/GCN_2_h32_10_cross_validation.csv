@@ -14,3 +14,5 @@ dataset,readout,fold 1,fold 2,fold 3,fold 4,fold 5,fold 6,fold 7,fold 8,fold 9,f
 PROTEINS,avg,59.61,59.53,59.57,0.056568542494922595,0.865
 dataset,readout,fold 1,fold 2,fold 3,fold 4,fold 5,fold 6,fold 7,fold 8,fold 9,fold 10,mean of acc,std of acc,time per epochs
 PROTEINS,avg,68.19,71.43,66.31,68.64333333333333,2.5899292139619083,2.8466666666666667
+dataset,readout,fold 1,fold 2,fold 3,fold 4,fold 5,fold 6,fold 7,fold 8,fold 9,fold 10,mean of acc,std of acc,time per epochs
+RGRAPH,avg,75.19,78.29,79.84,75.97,75.19,72.87,72.09,80.62,64.34,76.86,75.126,4.676045812911209,0.404

@@ -5,7 +5,7 @@ In order to design this GNN, we used the Magnetic Laplacian since in node-levels
 information. We used a similar idea, but changing the readout. THIS CODE IS NOT FINISHED YET.
 
 Future objectives: 
--   Change `GraphData` object in order to add the real and imag part od a matrix.
+-   Add node features.
 -   Add more complex pooling layers and not the *max, avg* or *sum*.
 -   Add the MagNet on a graph-level task to PyTorch
 

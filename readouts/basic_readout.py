@@ -12,7 +12,7 @@ def readout_function(x, readout, batch=None, device=None, complex = False):
   if complex:
     if len(x[0].size()) == 3: 
       if readout == 'complex_max':
-        return torch.max(unwind(x[0],x[1]), dim=1)
+        return torch.max(unwind(x[0],x[1]), dim=1)[0]
       elif readout == 'complex_avg':
         return torch.mean(unwind(x[0],x[1]), dim=1)
       elif readout == 'complex_sum':

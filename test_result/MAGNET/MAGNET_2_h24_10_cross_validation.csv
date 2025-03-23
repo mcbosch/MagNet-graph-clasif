@@ -1,0 +1,2 @@
+dataset,readout,fold 1,fold 2,fold 3,fold 4,fold 5,fold 6,fold 7,fold 8,fold 9,fold 10,mean of acc,std of acc,time per epochs
+RGRAPH,complex_avg,85.27,86.05,81.4,84.5,85.27,82.95,86.05,86.82,79.84,85.12,84.327,2.2406945847710276,0.5599999999999999
