@@ -88,7 +88,7 @@ class DataReader():
         if len(list(filter(lambda f: f.find('node_labels') >= 0, files))) != 0:
             print('node label: node label in dataset')
             data['features'] = self.read_node_features(list(filter(lambda f: f.find('node_labels') >= 0, files))[0], 
-                                                     nodes, graphs, fn=lambda s: int(s.strip()))
+                                                     nodes, graphs, fn=lambda s: list(map(int,s.split(sep = ','))))
         else:
             print('node label: degree of nodes')
             data['features'] = degree_features
@@ -425,6 +425,7 @@ class GraphData(torch.utils.data.Dataset):
         self.node_count_list = copy.deepcopy([data['node_count_list'][i] for i in self.idx])
         self.edge_matrix_count_list = copy.deepcopy([data['edge_matrix_count_list'][i] for i in self.idx])
         self.imag_lapl = [torch.tensor([0]) for _ in range(len(data['adj_list']))]
+        self.features_imag = [x for x in self.features_onehot]
 
 
         
@@ -485,7 +486,8 @@ class GraphData(torch.utils.data.Dataset):
                                     int(self.max_neighbor_list[index]),
                                     self.pad(self.edge_matrix_list[index], self.max_edge_matrix),
                                     int(self.node_count_list[index]),
-                                    int(self.edge_matrix_count_list[index])])     
+                                    int(self.edge_matrix_count_list[index])],
+                                    self.pad(self.features_imag[index].copy(), self.N_nodes_max))     
 
     def ad2MagLapl(self, q,  normalized = True):
         N = len(self.adj_list)

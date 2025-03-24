@@ -238,7 +238,7 @@ for dataset_name in args.dataset_list:
     
             scheduler = lr_scheduler.MultiStepLR(optimizer, [20, 30], gamma=0.1)
             
-            ACC_per_Epoch = []
+            ACC_test = []
             # Train function
             def train(train_loader, model_name_ = ''):
                 total_time_iter = 0
@@ -249,6 +249,7 @@ for dataset_name in args.dataset_list:
                 start = time.time()
                 train_loss, n_samples = 0, 0
                 num_iterations = len(list(enumerate(train_loader)))
+
 
                 for batch_idx, data in enumerate(train_loader):
                     char = '='*int(100*batch_idx/num_iterations) + " "*(100-int(100*batch_idx/num_iterations))
@@ -271,7 +272,7 @@ for dataset_name in args.dataset_list:
                     total_time_iter += time_iter
                     train_loss += loss.item() * len(output)
                     n_samples += len(output)
-                    
+                
                 scheduler.step()
                 sys.stdout.write(f"\r\033[1;92mTRAINED epoch: {epoch}\033[0m" + ' '*100 + '\n')
                 sys.stdout.flush
@@ -314,19 +315,20 @@ for dataset_name in args.dataset_list:
             loss_fn = F.cross_entropy
             
             total_time = 0
-
+            ACC_train = []
             for epoch in range(args.epochs):
                 total_time_iter = train(loaders[0])
                 total_time += total_time_iter
                 acc = test(loaders[1])
-                ACC_per_Epoch.append(acc)
+                ACC_test.append(acc)
+
             acc_folds.append(round(acc,2))
             time_folds.append(round(total_time/args.epochs,2))
             
-            plt.plot(list(range(args.epochs)), ACC_per_Epoch)
+            plt.plot(list(range(args.epochs)), ACC_test, color = 'blue')
             plt.xlim(0, 100)
             plt.ylim(0, 100)
-
+            plt.title(f'Test Acc MAGNET; q = 0.25; fold: {fold_id}')
             plt.xlabel("epochs")
             plt.ylabel("acc")
             

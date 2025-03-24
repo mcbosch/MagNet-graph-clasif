@@ -36,7 +36,7 @@ class MagNet(nn.Module):
         x, L_real, L_imag = data[:3]
         sizes = x.size()
         x_real = x 
-        x_imag = torch.zeros(sizes[0],sizes[1],sizes[2])
+        x_imag = data[-1]
 
         for i in range(self.n_layer):
             # Graph convolution layer
