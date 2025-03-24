@@ -58,7 +58,7 @@ def process_raw_data(mdag = False):
     doc_graph_labels = open(doc_path_graph_labels, 'w')
     doc_node_labels = open(doc_path_node_labels, 'w')
 
-    kingdoms = ['Animals', 'Bacteria','Archaea','Fungi','Plants','Protists']
+    kingdoms = {'Animals': 1, 'Bacteria': None,'Archaea': 0,'Fungi': 2,'Plants': 3,'Protists': 4}
     
     # Definim contadors dels grafs, nodes i arestes que faran falta per escriure en els arxius
     number_graphs = 0
@@ -90,7 +90,7 @@ def process_raw_data(mdag = False):
             O_ADJ_csv = pd.read_csv(ro, sep=";", quotechar='"',
                                 usecols=["source", "destination"])
             number_graphs += 1 # Ens situam en un nou graf
-            label = 1 if kingdom == 'Animals' else 0
+            label = kingdoms[kingdom]
             doc_graph_labels.write(str(label) + '\n')
             
             # Deinim un diccionari a mode de funció que assigna un nombre a cada node
@@ -121,4 +121,4 @@ def process_raw_data(mdag = False):
     doc_node_labels.close()
 
 
-process_raw_data(mdag=True)
+process_raw_data(mdag=False)

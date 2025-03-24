@@ -160,7 +160,7 @@ class DataReader():
 
         for u in np.unique(features_all):
             print('feature {}, count {}/{}'.format(u, np.count_nonzero(features_all == u), len(features_all)))
-        breakpoint()
+
         N_graphs = len(labels)  # Number of samples (graphs) in data
         assert N_graphs == len(data['adj_list']) == len(features_onehot), 'invalid data'
 
@@ -424,8 +424,8 @@ class GraphData(torch.utils.data.Dataset):
         self.edge_matrix_list = copy.deepcopy([data['edge_matrix_list'][i] for i in self.idx])
         self.node_count_list = copy.deepcopy([data['node_count_list'][i] for i in self.idx])
         self.edge_matrix_count_list = copy.deepcopy([data['edge_matrix_count_list'][i] for i in self.idx])
-        self.imag_lapl = None
-        self.imag2 = 'hola!'
+        self.imag_lapl = [torch.tensor([0]) for _ in range(len(data['adj_list']))]
+
 
         
 

@@ -3,5 +3,17 @@ import torch, math
 import numpy as np
 import os
 
-a = '1, 2, 3'
-print(a.split(','))
+f = np.matrix([
+    [1,2,1],
+    [2,1,1],
+    [1,1,1]
+])
+
+g2 = np.matrix([
+    [1, 0.5],
+    [0.5, 1]
+])
+
+g = np.array([1, 0.5, 0.5, 1])
+
+print(np.dot(g, np.array([1,1,1,1])))
