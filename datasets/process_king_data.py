@@ -121,4 +121,4 @@ def process_raw_data(mdag = False):
     doc_node_labels.close()
 
 
-process_raw_data()
+process_raw_data(mdag=True)

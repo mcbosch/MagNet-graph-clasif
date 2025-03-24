@@ -160,7 +160,7 @@ class DataReader():
 
         for u in np.unique(features_all):
             print('feature {}, count {}/{}'.format(u, np.count_nonzero(features_all == u), len(features_all)))
-        
+        breakpoint()
         N_graphs = len(labels)  # Number of samples (graphs) in data
         assert N_graphs == len(data['adj_list']) == len(features_onehot), 'invalid data'
 

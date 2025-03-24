@@ -25,7 +25,7 @@ from models.MAGNET import MagNet
 from utils import create_directory, save_result_csv
 
 model_list = ['GCN', 'MAGNET']
-dataset_list = ['PROTEINS', 'RGRAPH']
+dataset_list = ['PROTEINS', 'RGRAPH', 'MDAG']
 readout_list = ['max', 'avg', 'sum', 'complex_max', 'complex_avg', 'complex_sum']
 
 #====================================================================================
@@ -331,9 +331,9 @@ for dataset_name in args.dataset_list:
             plt.ylabel("acc")
             
             save = os.path.dirname(os.path.abspath(__file__))
-            os.makedirs(save + f'\\plots_{model_name}', exist_ok = True)
+            os.makedirs(save + f'\\plots_{model_name}_{dataset_name}', exist_ok = True)
 
-            ruta = save + f'\\plots_{model_name}\\fold_{fold_id}'
+            ruta = save + f'\\plots_{model_name}_{dataset_name}\\fold_{fold_id}.png'
             plt.savefig(ruta)
             plt.close()
 
