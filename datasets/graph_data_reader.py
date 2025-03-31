@@ -115,21 +115,28 @@ class DataReader():
             n_edges.append( int(n / 2) ) # Undirected edges, so need to divide by 2
             if not np.allclose(adj, adj.T):
                 pass
-            degrees.extend(list(np.sum(adj, 1))) # En el cas de dirigit es d_in d_out
+
+
+            degrees.extend(list(np.sum(adj, 1))) # En el cas de dirigit d_out
             features.append(np.array(data['features'][sample_id]))
                         
-        # Create features over graphs as one-hot vectors for each node
-        features_all = np.concatenate(features)
-        features_min = features_all.min()
-        features_dim = int(features_all.max() - features_min + 1) # Number of possible values
+        # Create features degrees
         
+        #features_all = np.concatenate(features)
+        #features_min = features_all.min()
+        #features_dim = int(features_all.max() - features_min + 1) # Number of possible values
+        
+        features_dim = len(data['features'][0][0])
+
+        """
         features_onehot = []
         for i, x in enumerate(features):
             feature_onehot = np.zeros((len(x), features_dim))
-            for node, value in enumerate(x):
-                feature_onehot[node, value - features_min] = 1
+            for node, feature in enumerate(x):
+                for value in feature:
+                    feature_onehot[node, value - features_min] = 1
             features_onehot.append(feature_onehot)
-            
+        """
         shapes = [len(adj) for adj in data['adj_list']]
         labels = data['targets'] # Graph class labels
         labels -= np.min(labels) # To start from 0
@@ -157,12 +164,13 @@ class DataReader():
         print('Classes: \t\t\t%s' % str(classes))
         for lbl in classes:
             print('Class %d: \t\t\t%d samples' % (lbl, np.sum(labels == lbl)))
-
+        """
         for u in np.unique(features_all):
             print('feature {}, count {}/{}'.format(u, np.count_nonzero(features_all == u), len(features_all)))
+        """
 
         N_graphs = len(labels)  # Number of samples (graphs) in data
-        assert N_graphs == len(data['adj_list']) == len(features_onehot), 'invalid data'
+        assert N_graphs == len(data['adj_list']) == len(data['features']), 'invalid data'
 
         # Create test sets first
         train_ids, test_ids = self.split_ids(np.arange(N_graphs), rnd_state=self.rnd_state, folds=folds)
@@ -177,7 +185,7 @@ class DataReader():
         #################################
         # Aquests els feim servir?
 
-        data['features_onehot'] = features_onehot
+        #data['features_onehot'] = features_onehot
         data['targets'] = labels
         data['splits'] = splits
         data['N_nodes_max'] = np.max(shapes)  # Max number of nodes
@@ -304,9 +312,11 @@ class DataReader():
             ind = np.where(graphs[graph_id] == node_id)[0]
             assert len(ind) == 1, ind
             assert node_features[graph_id][ind[0]] is None, node_features[graph_id][ind[0]]
-
+            n = len(x)
+            x2 = np.zeros(n)
+            for i in range(n): x2[i] = x[i] 
             # Afegim en aquella posició el node feature que estava en el arxiu
-            node_features[graph_id][ind[0]] = x
+            node_features[graph_id][ind[0]] = x2
         node_features_lst = [node_features[graph_id] for graph_id in sorted(list(graphs.keys()))]
         return node_features_lst
 
@@ -419,13 +429,14 @@ class GraphData(torch.utils.data.Dataset):
         # Use deepcopy to make sure we don't alter objects in folds
         self.labels = copy.deepcopy([data['targets'][i] for i in self.idx])
         self.adj_list = copy.deepcopy([data['adj_list'][i] for i in self.idx])
-        self.features_onehot = copy.deepcopy([data['features_onehot'][i] for i in self.idx])
+        #self.features_onehot = copy.deepcopy([data['features_onehot'][i] for i in self.idx])
         self.max_neighbor_list = copy.deepcopy([data['max_neighbor_list'][i] for i in self.idx])
         self.edge_matrix_list = copy.deepcopy([data['edge_matrix_list'][i] for i in self.idx])
         self.node_count_list = copy.deepcopy([data['node_count_list'][i] for i in self.idx])
         self.edge_matrix_count_list = copy.deepcopy([data['edge_matrix_count_list'][i] for i in self.idx])
         self.imag_lapl = [torch.tensor([0]) for _ in range(len(data['adj_list']))]
-        self.features_imag = [x for x in self.features_onehot]
+        self.features = copy.deepcopy([data['features'][i] for i in self.idx])
+        self.features_imag = [x for x in self.features]
 
 
         
@@ -476,8 +487,10 @@ class GraphData(torch.utils.data.Dataset):
         N_nodes = self.adj_list[index].shape[0]
         graph_support = np.zeros(self.N_nodes_max)
         graph_support[:N_nodes] = 1
-
-        return self.nested_list_to_torch([self.pad(self.features_onehot[index].copy(), self.N_nodes_max),  # Node_features
+        breakpoint()
+        return self.nested_list_to_torch([
+                                    self.pad(self.features[index].copy(), self.N_nodes_max),  # Node_features
+                                    self.pad(self.features_imag[index].copy(), self.N_nodes_max),
                                     self.pad(self.adj_list[index], self.N_nodes_max, self.N_nodes_max),  # Adjacency matrix
                                     self.pad(self.imag_lapl[index], self.N_nodes_max, self.N_nodes_max), # Imag part
                                     graph_support,  # Mask with values of 0 for dummy (zero padded) nodes, otherwise 1 
@@ -486,8 +499,8 @@ class GraphData(torch.utils.data.Dataset):
                                     int(self.max_neighbor_list[index]),
                                     self.pad(self.edge_matrix_list[index], self.max_edge_matrix),
                                     int(self.node_count_list[index]),
-                                    int(self.edge_matrix_count_list[index])],
-                                    self.pad(self.features_imag[index].copy(), self.N_nodes_max))     
+                                    int(self.edge_matrix_count_list[index])
+                                    ])     
 
     def ad2MagLapl(self, q,  normalized = True):
         N = len(self.adj_list)

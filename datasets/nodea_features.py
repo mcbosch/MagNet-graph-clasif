@@ -7,8 +7,8 @@ r"""
 This document computes the node features (d, d_in, d_out) of the nodes
 """
 ruta_actual = os.path.dirname(os.path.abspath(__file__))
-data_dir = ruta_actual + '\\RGRAPH'
-doc_node_features = open(data_dir + '\\RGRAPH_node_labels.txt', 'w')
+data_dir = ruta_actual + '\\MDAG'
+doc_node_features = open(data_dir + '\\MDAG_node_labels.txt', 'w')
 
 # We create the dictionary node->graphs; graphs-> nodes
 
@@ -86,8 +86,8 @@ def read_graph_nodes_relations(fpath):
             graphs[graph_id] = np.array(graphs[graph_id])
         return nodes, graphs
 
-nodes, graphs = read_graph_nodes_relations('RGRAPH_graph_indicator.txt')
-list_adj = read_graph_adj('RGRAPH_A.txt', nodes, graphs)
+nodes, graphs = read_graph_nodes_relations('MDAG_graph_indicator.txt')
+list_adj = read_graph_adj('MDAG_A.txt', nodes, graphs)
 
 for A in list_adj:
     N = len(A) # Number of nodes
@@ -106,4 +106,3 @@ for A in list_adj:
                 d_out += i > j
         s = f'{d},{d_in},{d_out}\n'
         doc_node_features.write(s)
-doc_node_features.close()    

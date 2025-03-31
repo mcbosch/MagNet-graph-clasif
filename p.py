@@ -5,3 +5,4 @@ import os
 
 A = '1, 2, 3'
 print(list(map(int,A.split(sep=','))))
+print(np.zeros(3).shape)

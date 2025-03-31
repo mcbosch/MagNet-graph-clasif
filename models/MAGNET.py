@@ -33,7 +33,7 @@ class MagNet(nn.Module):
   
     def forward(self, data):
 
-        x, L_real, L_imag = data[:3]
+        x_real,x_imag, L_real, L_imag = data[:4]
         sizes = x.size()
         x_real = x 
         x_imag = data[-1]

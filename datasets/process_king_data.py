@@ -7,8 +7,27 @@ Aquest codi és per lletgir les dades. Hi ha dues funcions principals; la primer
 prendre les dades que necessitam i guardarles a data_processed; la segona llegeix
 aquestes dades i les guarda en tres conjunts: training, validation i test.
 """
+def modify_results():
+    ruta_actual = os.path.abspath(__file__)
+    ruta_superior = os.path.dirname(os.path.dirname(os.path.dirname(ruta_actual)))
 
-def process_raw_data(mdag = False):
+    Results_csv = pd.read_csv(ruta_superior+"\\raw2\\Results.csv",usecols=["organism","Categories"],  na_values=["nan", "NaN", "NA", ""])
+
+    Results_csv = Results_csv.dropna()
+
+    for i in range(len(Results_csv['Categories'])):
+        s = Results_csv.iloc[i,1]
+    
+        if not isinstance(s,str): print('ERROR', s)
+        if 'Animals' in s: Results_csv.iloc[i,1] = 'Animals'
+        elif 'Protists' in s: Results_csv.iloc[i,1] = 'Protists'
+        elif 'Bacteria' in s: Results_csv.iloc[i,1] = 'Bacteria'
+        elif 'Fungi' in s: Results_csv.iloc[i,1] = 'Fungi'
+        elif 'Archaea' in s: Results_csv.iloc[i,1] = 'Archaea'
+        elif 'Plants' in s: Results_csv.iloc[i,1] = 'Plants'
+
+    Results_csv.to_csv(ruta_superior+"\\raw2\\Results2.csv", index=False)
+def process_raw2(mdag = False):
 
     r"""
     This functions creates 4 documents .txt that stores the data of the MDAG database.
@@ -26,7 +45,7 @@ def process_raw_data(mdag = False):
     os.makedirs(destination + f'\\{name}', exist_ok= True)
 
     # Lletgim en Results.csv l'organisme i categories.
-    organism_csv = pd.read_csv(ruta_superior+"\\raw_data\\data\\Results.csv", 
+    organism_csv = pd.read_csv(ruta_superior+"\\raw2\\Results2.csv", 
                                usecols=["organism","Categories"], 
                                na_values=["nan", "NaN", "NA", ""])
     
@@ -38,7 +57,7 @@ def process_raw_data(mdag = False):
     carpeta_destino = destination + f'\\{name}'
 
     # Definim la ruta de la carpeta d'on agafarem les dades
-    ruta_org = ruta_superior + '\\raw_data\\data\\Individuals'
+    ruta_org = ruta_superior + '\\raw2\\Individuals'
 
     # Definim es rutes on guardarem les dades
     doc_path_A = carpeta_destino + f'\\{name}_A.txt'
@@ -79,7 +98,7 @@ def process_raw_data(mdag = False):
             ro = ruta_org + arx
 
             # Print formato carga
-            char = '='*int(100*i/n) + " "*(100-int(100*i/n))
+            char = f"\033[7m \033[0m"*int(100*i/n) + " "*(100-int(100*i/n))
             total = '[' + " "*100 + ']'
             sys.stdout.write(f"\r[{char}]")  # Escribe en la misma línea
             sys.stdout.flush()  # Forzar la actualización de la línea
@@ -120,5 +139,5 @@ def process_raw_data(mdag = False):
     doc_graph_labels.close()
     doc_node_labels.close()
 
-
-process_raw_data(mdag=False)
+#modify_results()
+process_raw2(mdag=True)

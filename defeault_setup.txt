@@ -1,0 +1,1 @@
+python train2.py --model_list MAGNET --dataset_list MDAG --readout_list complex_avg --n_agg_layer 2 --agg_hidden 24 --n_folds 10 --epochs 100 --batch_size 32 --save_model FALSE

@@ -252,7 +252,7 @@ for dataset_name in args.dataset_list:
 
 
                 for batch_idx, data in enumerate(train_loader):
-                    char = '='*int(100*batch_idx/num_iterations) + " "*(100-int(100*batch_idx/num_iterations))
+                    char = f"\033[7m \033[0m"*int(100*batch_idx/num_iterations) + " "*(100-int(100*batch_idx/num_iterations))
                     sys.stdout.write(f"\r\033[5;94mTraining\033[0m [{char}]")  # Escribe en la misma línea
                     sys.stdout.flush()  # Forzar la actualización de la línea
 
@@ -264,7 +264,7 @@ for dataset_name in args.dataset_list:
                
                     output = model(data)
 
-                    loss = loss_fn(output, data[5])
+                    loss = loss_fn(output, data[6])
                     loss.backward()
                     optimizer.step()
                     
@@ -293,12 +293,12 @@ for dataset_name in args.dataset_list:
                         data[i] = data[i].to(device)
 
                     output = model(data)
-                    loss = loss_fn(output, data[5], reduction='sum')
+                    loss = loss_fn(output, data[6], reduction='sum')
                     test_loss += loss.item()
                     n_samples += len(output)
                     pred = output.detach().cpu().max(1, keepdim=True)[1]
     
-                    correct += pred.eq(data[5].detach().cpu().view_as(pred)).sum().item()
+                    correct += pred.eq(data[6].detach().cpu().view_as(pred)).sum().item()
     
                 time_iter = time.time() - start
     
