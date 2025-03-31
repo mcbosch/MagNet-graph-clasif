@@ -313,11 +313,11 @@ class DataReader():
             assert len(ind) == 1, ind
             assert node_features[graph_id][ind[0]] is None, node_features[graph_id][ind[0]]
             n = len(x)
-            x2 = np.zeros(n)
+            x2 = [0 for _ in range(n)]
             for i in range(n): x2[i] = x[i] 
             # Afegim en aquella posició el node feature que estava en el arxiu
             node_features[graph_id][ind[0]] = x2
-        node_features_lst = [node_features[graph_id] for graph_id in sorted(list(graphs.keys()))]
+        node_features_lst = [np.array(node_features[graph_id]) for graph_id in sorted(list(graphs.keys()))]
         return node_features_lst
 
     def get_node_features_degree(self, adj_list):
@@ -464,7 +464,8 @@ class GraphData(torch.utils.data.Dataset):
     
     def nested_list_to_torch(self, data):
         #if isinstance(data, dict):
-            #keys = list(data.keys())           
+            #keys = list(data.keys())
+          
         for i in range(len(data)):
             #if isinstance(data, dict):
                 #i = keys[i]
@@ -487,7 +488,6 @@ class GraphData(torch.utils.data.Dataset):
         N_nodes = self.adj_list[index].shape[0]
         graph_support = np.zeros(self.N_nodes_max)
         graph_support[:N_nodes] = 1
-        breakpoint()
         return self.nested_list_to_torch([
                                     self.pad(self.features[index].copy(), self.N_nodes_max),  # Node_features
                                     self.pad(self.features_imag[index].copy(), self.N_nodes_max),

@@ -5,4 +5,5 @@ import os
 
 A = '1, 2, 3'
 print(list(map(int,A.split(sep=','))))
-print(np.zeros(3).shape)
+B = [[1,2,3],[0,0,1]]
+print(np.array(B).shape)

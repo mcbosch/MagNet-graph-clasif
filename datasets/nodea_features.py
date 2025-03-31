@@ -89,7 +89,10 @@ def read_graph_nodes_relations(fpath):
 nodes, graphs = read_graph_nodes_relations('MDAG_graph_indicator.txt')
 list_adj = read_graph_adj('MDAG_A.txt', nodes, graphs)
 
+n = len(list_adj)
+m = 0
 for A in list_adj:
+    m +=1
     N = len(A) # Number of nodes
 
     # It should be in order...
@@ -105,4 +108,14 @@ for A in list_adj:
                 d_in += i < j
                 d_out += i > j
         s = f'{d},{d_in},{d_out}\n'
-        doc_node_features.write(s)
+    
+    char = f"\033[7m \033[0m"*int(100*m/n) + " "*(100-int(100*m/n))
+    total = '[' + " "*100 + ']'
+    sys.stdout.write(f"\r[{char}]")  # Escribe en la misma línea
+    sys.stdout.flush()  # Forzar la actualización de la línea
+    doc_node_features.write(s)
+
+char = f" "*102
+sys.stdout.write(f"\r{char}")  # Escribe en la misma línea
+sys.stdout.flush()  # Forzar la actualización de la línea
+print('Read node features!')

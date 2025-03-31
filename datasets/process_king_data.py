@@ -77,7 +77,7 @@ def process_raw2(mdag = False):
     doc_graph_labels = open(doc_path_graph_labels, 'w')
     doc_node_labels = open(doc_path_node_labels, 'w')
 
-    kingdoms = {'Animals': 1, 'Bacteria': None,'Archaea': 0,'Fungi': 2,'Plants': 3,'Protists': 4}
+    kingdoms = {'Animals': 1, 'Bacteria': None,'Archaea': 0,'Fungi': 0,'Plants': 0,'Protists': 0}
     
     # Definim contadors dels grafs, nodes i arestes que faran falta per escriure en els arxius
     number_graphs = 0

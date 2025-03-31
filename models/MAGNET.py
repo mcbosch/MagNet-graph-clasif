@@ -34,9 +34,7 @@ class MagNet(nn.Module):
     def forward(self, data):
 
         x_real,x_imag, L_real, L_imag = data[:4]
-        sizes = x.size()
-        x_real = x 
-        x_imag = data[-1]
+
 
         for i in range(self.n_layer):
             # Graph convolution layer
