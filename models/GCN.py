@@ -58,7 +58,7 @@ class GCN(nn.Module):
     
     def forward(self, data):
 
-        x, adj = data[:2]
+        x, _, adj = data[:3]
         for i in range(self.n_layer):
            # Graph convolution layer
            x = F.relu(self.graph_convolution_layers[i](x, adj))
