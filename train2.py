@@ -227,7 +227,7 @@ for dataset_name in args.dataset_list:
                 c += p.numel()
             print('N trainable parameters:', c)
             
-
+            trainable_param = c
             
             # Optimizer
             optimizer = optim.Adam(
@@ -238,7 +238,7 @@ for dataset_name in args.dataset_list:
     
             scheduler = lr_scheduler.MultiStepLR(optimizer, [20, 30], gamma=0.1)
             
-            ACC_test = []
+            
             # Train function
             def train(train_loader, model_name_ = ''):
                 total_time_iter = 0
@@ -279,10 +279,10 @@ for dataset_name in args.dataset_list:
                 print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f} (avg: {:.6f}) \tsec/iter: {:.4f} \n'.format(
                             epoch, n_samples, len(train_loader.dataset),
                             100. * (batch_idx + 1) / len(train_loader), loss.item(), train_loss / n_samples, time_iter / (batch_idx + 1) ))
-                return total_time_iter / (batch_idx + 1)
+                return total_time_iter / (batch_idx + 1), loss.item(), train_loss / n_samples
             
             # Test function
-
+           
             def test(test_loader):
                 print('Test model ...')
                 model.eval()
@@ -309,36 +309,108 @@ for dataset_name in args.dataset_list:
                                                                                                       test_loss, 
                                                                                                       correct, 
                                                                                                       n_samples, acc))
-                return acc
+                return acc, test_loss
             
             # Loss function
             loss_fn = F.cross_entropy
             
             total_time = 0
+            LOSS_test = []
+            ACC_test = []
+
             ACC_train = []
+            LOSS_train = []
+
             for epoch in range(args.epochs):
-                total_time_iter = train(loaders[0])
+                total_time_iter, l_train, accu_train = train(loaders[0])
                 total_time += total_time_iter
-                acc = test(loaders[1])
+                acc, t_loss = test(loaders[1])
                 ACC_test.append(acc)
+                LOSS_test.append(t_loss)
+
+                ACC_train.append(accu_train)
+                LOSS_train.append(l_train)
 
             acc_folds.append(round(acc,2))
             time_folds.append(round(total_time/args.epochs,2))
             
+            #############################
+            #### GRAFS ACC
+
             plt.plot(list(range(args.epochs)), ACC_test, color = 'blue')
             plt.xlim(0, 100)
             plt.ylim(0, 100)
-            plt.title(f'Test Acc MAGNET; q = 0.25; fold: {fold_id}')
+            title = ''
+            if model_name == "MAGNET": title = f'Test Acc MAGNET; q = 0.25; fold: {fold_id}; #param: {trainable_param}'
+            if model_name == "GCN": title = f'Test Acc GCN; #param: {trainable_param}'
+            plt.title(title)
             plt.xlabel("epochs")
             plt.ylabel("acc")
             
             save = os.path.dirname(os.path.abspath(__file__))
-            os.makedirs(save + f'\\plots_{model_name}_{dataset_name}', exist_ok = True)
+            os.makedirs(save + f'\\plots_{model_name}_{dataset_name}_test', exist_ok = True)
 
-            ruta = save + f'\\plots_{model_name}_{dataset_name}\\fold_{fold_id}.png'
+            ruta = save + f'\\plots_{model_name}_{dataset_name}_test\\ACC_fold_{fold_id}.png'
             plt.savefig(ruta)
             plt.close()
 
+            # Training Plot6
+            
+            plt.plot(list(range(args.epochs)), ACC_train, color = 'blue')
+            plt.xlim(0, 100)
+            plt.ylim(0, 100)
+            title = ''
+            if model_name == "MAGNET": title = f'Train Acc MAGNET; q = 0.25; fold: {fold_id}; #param: {trainable_param}'
+            if model_name == "GCN": title = f'Train Acc GCN; #param: {trainable_param}'
+            plt.title(title)
+            plt.xlabel("epochs")
+            plt.ylabel("acc")
+            
+            save = os.path.dirname(os.path.abspath(__file__))
+            os.makedirs(save + f'\\plots_{model_name}_{dataset_name}_train', exist_ok = True)
+
+            ruta = save + f'\\plots_{model_name}_{dataset_name}_train\\ACC_fold_{fold_id}.png'
+            plt.savefig(ruta)
+            plt.close()
+
+            #####################
+            #### GRAFS LOSS
+
+            #Train
+            plt.plot(list(range(args.epochs)), LOSS_train, color = 'red')
+            plt.xlim(0, 100)
+            plt.ylim(0, 2)
+            title = ''
+            if model_name == "MAGNET": title = f'Train Loss MAGNET; q = 0.25; fold: {fold_id}; #param: {trainable_param}'
+            if model_name == "GCN": title = f'Train Loss GCN; #param: {trainable_param}'
+            plt.title(title)
+            plt.xlabel("epochs")
+            plt.ylabel("acc")
+            
+            save = os.path.dirname(os.path.abspath(__file__))
+            os.makedirs(save + f'\\plots_{model_name}_{dataset_name}_train', exist_ok = True)
+
+            ruta = save + f'\\plots_{model_name}_{dataset_name}_train\\LOSS_fold_{fold_id}.png'
+            plt.savefig(ruta)
+            plt.close()
+
+            # Test
+            plt.plot(list(range(args.epochs)), LOSS_test, color = 'red')
+            plt.xlim(0, 100)
+            plt.ylim(0, 2)
+            title = ''
+            if model_name == "MAGNET": title = f'Test Loss MAGNET; q = 0.25; fold: {fold_id}; #param: {trainable_param}'
+            if model_name == "GCN": title = f'Test Loss GCN; #param: {trainable_param}'
+            plt.title(title)
+            plt.xlabel("epochs")
+            plt.ylabel("acc")
+            
+            save = os.path.dirname(os.path.abspath(__file__))
+            os.makedirs(save + f'\\plots_{model_name}_{dataset_name}_test', exist_ok = True)
+
+            ruta = save + f'\\plots_{model_name}_{dataset_name}_test\\LOSS_fold_{fold_id}.png'
+            plt.savefig(ruta)
+            plt.close()
             # Save model
             if args.save_model:
                 print('Save model ...')
