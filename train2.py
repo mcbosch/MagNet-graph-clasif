@@ -8,6 +8,7 @@ import time
 import statistics
 import matplotlib.pyplot as plt
 import os
+import pandas as pd
 
 # Carregam els paquets necessaris per manipulars els grafs i les GNNs
 import torch
@@ -90,6 +91,8 @@ parser.add_argument('--fc_hidden', type=int, default=128,
                     help='size of fully-connected layer after readout')
 parser.add_argument('--dropout', type=float, default=0,
                     help='dropout rate of layer')
+parser.add_argument('--mag_q', type=float, default=0.25,
+                    help='frequency for a MagNet Model')
 
 #=================================================================================
 #          ENTRENAMENT      
@@ -150,6 +153,9 @@ else:
   
 print('Using device in train process:', device)
 
+local_path = os.path.dirname(os.path.abspath(__file__))
+os.makedirs(local_path + f"\\ RESULTS", exist_ok=True)
+
 for dataset_name in args.dataset_list:
     print('-'*50)
     s = dataset_name
@@ -159,9 +165,21 @@ for dataset_name in args.dataset_list:
                         rnd_state=np.random.RandomState(args.seed),
                         folds=args.n_folds,           
                         )
+    
+    # Cream un data frame per guardar els resultats
+
+    results_global_acc = pd.DataFrame()
+    results_global_loss = pd.DataFrame()
+    os.makedirs(local_path + f"\\RESULTS\\{dataset_name}", exist_ok=True) # Cream carpeta on guardarem els resultats
+    
     # Prenem un model
     for model_name in args.model_list:
-      
+
+      os.makedirs(local_path + f"\\RESULTS\\{dataset_name}\\{model_name}", exist_ok=True)
+      results_global_acc['Model'],results_global_loss['Model'] = [], []
+      row_global_acc = {'Model': model_name}
+      row_global_loss = {'Model': model_name}
+
       # Prenem una funció readout
       for i, readout_name in enumerate(args.readout_list):
         print('-'*25)
@@ -174,6 +192,13 @@ for dataset_name in args.dataset_list:
         time_folds = []
 
         for fold_id in range(args.n_folds):
+            
+            
+            results_fold_id_acc = pd.DataFrame()
+            results_fold_id_loss = pd.DataFrame()
+            os.makedirs(local_path + f"\\RESULTS\\{dataset_name}\\{model_name}\\fold_{fold_id}",exist_ok=True)
+
+
             if model_name == 'GCN':
               model = GCN(n_feat=datareader.data['features_dim'],
                       n_class=datareader.data['n_classes'],
@@ -191,10 +216,12 @@ for dataset_name in args.dataset_list:
                         fc_hidden=args.fc_hidden,
                         dropout=args.dropout,
                         readout=readout_name,
-                        device=device).to(device)                                                  
+                        device=device).to(device)    
+                                                              
             print(model)
             print('Readout:', readout_name)
             print('\nFOLD', fold_id)
+
             loaders = []
             for split in ['train', 'test']:
                 # Build GDATA object
@@ -204,11 +231,7 @@ for dataset_name in args.dataset_list:
                 
                 if model_name == 'MAGNET':
                    print('Changing data: \033[91mAdjacency\033[0m --> \033[92mMagnetic Laplacian\033[0m')
-                   gdata.ad2MagLapl(q=0.25)
-
-                #####################################
-                ########        !!!         #########
-                #####################################
+                   gdata.ad2MagLapl(q=args.mag_q)
 
                 # Agrupa en batches i pot donar problemes (expandeix el laplacià i vols definir-lo com una llista)
                 loader = torch.utils.data.DataLoader(gdata, 
@@ -217,8 +240,6 @@ for dataset_name in args.dataset_list:
                                                      num_workers=args.threads,
                                                      drop_last=False)
                 loaders.append(loader)
-
-                #######################################
                  
          
             # Total trainable param
@@ -315,102 +336,35 @@ for dataset_name in args.dataset_list:
             loss_fn = F.cross_entropy
             
             total_time = 0
-            LOSS_test = []
-            ACC_test = []
 
-            ACC_train = []
-            LOSS_train = []
+            row_acc_fold_id = {}
+            row_loss_fold_id = {}
 
             for epoch in range(args.epochs):
                 total_time_iter, l_train, accu_train = train(loaders[0])
                 total_time += total_time_iter
                 acc, t_loss = test(loaders[1])
-                ACC_test.append(acc)
-                LOSS_test.append(t_loss)
+                
+                name = 'e_'+str(epoch)
+                row_acc_fold_id[name], row_loss_fold_id[name] = round(acc,3), round(t_loss,5)
 
-                ACC_train.append(accu_train)
-                LOSS_train.append(l_train)
+                
+            row_global_acc[f"fold_{fold_id}"] = round(acc,3)
+            row_global_loss[f"fold{fold_id}"] = round(t_loss,5)
 
             acc_folds.append(round(acc,2))
             time_folds.append(round(total_time/args.epochs,2))
             
             #############################
-            #### GRAFS ACC
+            #   SAVE RESULTS
 
-            plt.plot(list(range(args.epochs)), ACC_test, color = 'blue')
-            plt.xlim(0, 100)
-            plt.ylim(0, 100)
-            title = ''
-            if model_name == "MAGNET": title = f'Test Acc MAGNET; q = 0.25; fold: {fold_id}; #param: {trainable_param}'
-            if model_name == "GCN": title = f'Test Acc GCN; #param: {trainable_param}'
-            plt.title(title)
-            plt.xlabel("epochs")
-            plt.ylabel("acc")
-            
-            save = os.path.dirname(os.path.abspath(__file__))
-            os.makedirs(save + f'\\plots_{model_name}_{dataset_name}_test', exist_ok = True)
+            #############################
+            results_fold_id_acc = pd.concat([results_fold_id_acc, pd.DataFrame([row_acc_fold_id])], ignore_index=True)
+            results_fold_id_loss = pd.concat([results_fold_id_loss, pd.DataFrame([row_loss_fold_id])], ignore_index=True)
 
-            ruta = save + f'\\plots_{model_name}_{dataset_name}_test\\ACC_fold_{fold_id}.png'
-            plt.savefig(ruta)
-            plt.close()
+            results_fold_id_acc.to_csv(local_path + f"\\RESULTS\\{dataset_name}\\{model_name}\\fold_{fold_id}\\results_acc.csv")
+            results_fold_id_loss.to_csv(local_path + f"\\RESULTS\\{dataset_name}\\{model_name}\\fold_{fold_id}\\results_loss.csv")
 
-            # Training Plot6
-            
-            plt.plot(list(range(args.epochs)), ACC_train, color = 'blue')
-            plt.xlim(0, 100)
-            plt.ylim(0, 100)
-            title = ''
-            if model_name == "MAGNET": title = f'Train Acc MAGNET; q = 0.25; fold: {fold_id}; #param: {trainable_param}'
-            if model_name == "GCN": title = f'Train Acc GCN; #param: {trainable_param}'
-            plt.title(title)
-            plt.xlabel("epochs")
-            plt.ylabel("acc")
-            
-            save = os.path.dirname(os.path.abspath(__file__))
-            os.makedirs(save + f'\\plots_{model_name}_{dataset_name}_train', exist_ok = True)
-
-            ruta = save + f'\\plots_{model_name}_{dataset_name}_train\\ACC_fold_{fold_id}.png'
-            plt.savefig(ruta)
-            plt.close()
-
-            #####################
-            #### GRAFS LOSS
-
-            #Train
-            plt.plot(list(range(args.epochs)), LOSS_train, color = 'red')
-            plt.xlim(0, 100)
-            plt.ylim(0, 2)
-            title = ''
-            if model_name == "MAGNET": title = f'Train Loss MAGNET; q = 0.25; fold: {fold_id}; #param: {trainable_param}'
-            if model_name == "GCN": title = f'Train Loss GCN; #param: {trainable_param}'
-            plt.title(title)
-            plt.xlabel("epochs")
-            plt.ylabel("acc")
-            
-            save = os.path.dirname(os.path.abspath(__file__))
-            os.makedirs(save + f'\\plots_{model_name}_{dataset_name}_train', exist_ok = True)
-
-            ruta = save + f'\\plots_{model_name}_{dataset_name}_train\\LOSS_fold_{fold_id}.png'
-            plt.savefig(ruta)
-            plt.close()
-
-            # Test
-            plt.plot(list(range(args.epochs)), LOSS_test, color = 'red')
-            plt.xlim(0, 100)
-            plt.ylim(0, 2)
-            title = ''
-            if model_name == "MAGNET": title = f'Test Loss MAGNET; q = 0.25; fold: {fold_id}; #param: {trainable_param}'
-            if model_name == "GCN": title = f'Test Loss GCN; #param: {trainable_param}'
-            plt.title(title)
-            plt.xlabel("epochs")
-            plt.ylabel("acc")
-            
-            save = os.path.dirname(os.path.abspath(__file__))
-            os.makedirs(save + f'\\plots_{model_name}_{dataset_name}_test', exist_ok = True)
-
-            ruta = save + f'\\plots_{model_name}_{dataset_name}_test\\LOSS_fold_{fold_id}.png'
-            plt.savefig(ruta)
-            plt.close()
             # Save model
             if args.save_model:
                 print('Save model ...')
@@ -421,15 +375,14 @@ for dataset_name in args.dataset_list:
                 file_name = model_name + '_' + dataset_name + '_' + readout_name + '_' + str(fold_id) + '_' + str(args.n_agg_layer) + '_h' + str(args.agg_hidden) + '.pt'
 
                 torch.save(model, './save_model/' + model_name + '/' + file_name)
-                '''
-                Els arxius .pt els podem lletgir de manera sencilla amb torch:
-                    > import torch
-                    > # Definim un model qualsevol igual que el que volem carregar
-                    > model = MyModel()
-                    > model.load_state_dict(torch.load("model.pt"))
-                '''
-
                 print('Complete to save model')
+
+
+        row_global_acc['mean'] = round(statistics.mean(acc_folds),3)
+        row_global_acc['sd'] = round(statistics.stdev(acc_folds),3)
+
+        results_global_acc = pd.concat([results_global_acc,pd.DataFrame([row_global_acc])], ignore_index=True)
+        results_global_loss = pd.concat([results_global_loss, pd.DataFrame([row_global_loss])], ignore_index=True)
 
         print(acc_folds)
         print('{}-fold cross validation avg acc (+- std): {} ({})'.format(args.n_folds, statistics.mean(acc_folds), statistics.stdev(acc_folds)))
@@ -457,3 +410,6 @@ for dataset_name in args.dataset_list:
         
         print('-'*25)
     print('-'*50)
+
+    results_global_acc.to_csv(local_path + f"\\RESULTS\\{dataset_name}\\results_acc.csv")
+    results_global_loss.to_csv(local_path + f"\\RESULTS\\{dataset_name}\\results_loss.csv")
