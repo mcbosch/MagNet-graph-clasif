@@ -39,7 +39,7 @@ class MagNet_layer(nn.Module):
         self.in_features = in_features
         self.out_features = out_features
         self.q = q
-
+        self.device = device
 
         if K == 1 and simetric:
             self.weight = nn.Parameter(torch.FloatTensor(in_features, out_features)).to(device)
@@ -74,7 +74,7 @@ class MagNet_layer(nn.Module):
         sizes = L_real.size()
         # Fer breakpoint -> tenim un  tensor 3-dimensional?
         
-        I = torch.stack([torch.eye(sizes[1]) for _ in range(sizes[0])])
+        I = torch.stack([torch.eye(sizes[1]) for _ in range(sizes[0])]).to(device=self.device)
         breakpoint()
 
         # Scale the magnetic laplacian with l_max ~ 2
