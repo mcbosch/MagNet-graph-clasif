@@ -75,7 +75,6 @@ class MagNet_layer(nn.Module):
         # Fer breakpoint -> tenim un  tensor 3-dimensional?
         
         I = torch.stack([torch.eye(sizes[1]) for _ in range(sizes[0])]).to(device=self.device)
-        breakpoint()
 
         # Scale the magnetic laplacian with l_max ~ 2
         if self.order == 1 and self.simetric:
