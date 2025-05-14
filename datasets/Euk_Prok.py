@@ -91,11 +91,13 @@ def process_raw2(mdag = False, largest_component = False):
         n_P =  organism_csv_Prok.shape[0]  # n és el nombre de grafs total
         n_E = organism_csv_Euk.shape[0]
         n = n_P + n_E
+        print(f'# Of Organism:\n  Procariotes: {n_P}\n  Arquees: {n_E}')
         for i in range(n): 
             
             # Prenem un organisme i la classe a la que pertany
             if i < n_P: [organism, kingdom ] = organism_csv_Prok.iloc[i]
-            elif i >= n_P: [organism, kingdom ] = organism_csv_Euk.iloc[n-i]
+            elif i >= n_P: 
+                [organism, kingdom ] = organism_csv_Euk.iloc[i-n_P]
             
             if kingdom == 'Bacteria': pass
 
@@ -103,7 +105,7 @@ def process_raw2(mdag = False, largest_component = False):
                 # Lletgim el reaction graph
                 if mdag: 
                     arx = f'\\{organism}\\{organism}_mDAG_adj.csv'
-                    if largest_component: arx = f'\\{organism}\\{organism}_mDAG_biggerDAG.csv'
+                    if largest_component: arx = f'\\{organism}\\{organism}_mDAG_biggerDAG_adj.csv'
                 else: arx = f'\\{organism}\\{organism}_R_adj.csv'
 
                 # Definim la ruta de l'arxiu del organisme
@@ -155,4 +157,4 @@ def process_raw2(mdag = False, largest_component = False):
     doc_node_labels.close()
 
 modify_results()
-#process_raw2(mdag=True)
+process_raw2(mdag=True,largest_component=True)

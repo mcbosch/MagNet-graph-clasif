@@ -26,7 +26,7 @@ from models.MAGNET import MagNet
 from utils import create_directory, save_result_csv
 
 model_list = ['GCN', 'MAGNET']
-dataset_list = ['PROTEINS', 'RGRAPH', 'MDAG']
+dataset_list = ['PROTEINS', 'RGRAPH', 'MDAG','MDAG_LC']
 readout_list = ['max', 'avg', 'sum', 'complex_max', 'complex_avg', 'complex_sum']
 
 #====================================================================================
