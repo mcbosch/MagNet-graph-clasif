@@ -154,7 +154,7 @@ else:
 print('Using device in train process:', device)
 
 local_path = os.path.dirname(os.path.abspath(__file__))
-os.makedirs(local_path + f"\\ RESULTS", exist_ok=True)
+os.makedirs(local_path + f"/RESULTS", exist_ok=True)
 
 for dataset_name in args.dataset_list:
     print('-'*50)
@@ -170,12 +170,12 @@ for dataset_name in args.dataset_list:
 
     results_global_acc = pd.DataFrame()
     results_global_loss = pd.DataFrame()
-    os.makedirs(local_path + f"\\RESULTS\\{dataset_name}", exist_ok=True) # Cream carpeta on guardarem els resultats
+    os.makedirs(local_path + f"/RESULTS/{dataset_name}", exist_ok=True) # Cream carpeta on guardarem els resultats
     
     # Prenem un model
     for model_name in args.model_list:
 
-      os.makedirs(local_path + f"\\RESULTS\\{dataset_name}\\{model_name}", exist_ok=True)
+      os.makedirs(local_path + f"/RESULTS/{dataset_name}/{model_name}", exist_ok=True)
       results_global_acc['Model'],results_global_loss['Model'] = [], []
       row_global_acc = {'Model': model_name}
       row_global_loss = {'Model': model_name}
@@ -196,7 +196,7 @@ for dataset_name in args.dataset_list:
             
             results_fold_id_acc = pd.DataFrame()
             results_fold_id_loss = pd.DataFrame()
-            os.makedirs(local_path + f"\\RESULTS\\{dataset_name}\\{model_name}\\fold_{fold_id}",exist_ok=True)
+            os.makedirs(local_path + f"/RESULTS/{dataset_name}/{model_name}/fold_{fold_id}",exist_ok=True)
 
 
             if model_name == 'GCN':
@@ -362,8 +362,8 @@ for dataset_name in args.dataset_list:
             results_fold_id_acc = pd.concat([results_fold_id_acc, pd.DataFrame([row_acc_fold_id])], ignore_index=True)
             results_fold_id_loss = pd.concat([results_fold_id_loss, pd.DataFrame([row_loss_fold_id])], ignore_index=True)
 
-            results_fold_id_acc.to_csv(local_path + f"\\RESULTS\\{dataset_name}\\{model_name}\\fold_{fold_id}\\results_acc.csv")
-            results_fold_id_loss.to_csv(local_path + f"\\RESULTS\\{dataset_name}\\{model_name}\\fold_{fold_id}\\results_loss.csv")
+            results_fold_id_acc.to_csv(local_path + f"/RESULTS/{dataset_name}/{model_name}/fold_{fold_id}/results_acc.csv")
+            results_fold_id_loss.to_csv(local_path + f"/RESULTS/{dataset_name}/{model_name}/fold_{fold_id}/results_loss.csv")
 
             # Save model
             if args.save_model:
@@ -411,5 +411,5 @@ for dataset_name in args.dataset_list:
         print('-'*25)
     print('-'*50)
 
-    results_global_acc.to_csv(local_path + f"\\RESULTS\\{dataset_name}\\results_acc.csv")
-    results_global_loss.to_csv(local_path + f"\\RESULTS\\{dataset_name}\\results_loss.csv")
+    results_global_acc.to_csv(local_path + f"/RESULTS/{dataset_name}/results_acc.csv")
+    results_global_loss.to_csv(local_path + f"/RESULTS/{dataset_name}/results_loss.csv")
