@@ -5,9 +5,8 @@ In order to design this GNN, we used the Magnetic Laplacian since in node-levels
 information. We used a similar idea, but changing the readout. THIS CODE IS NOT FINISHED YET.
 
 Future objectives: 
--   Add node features.
--   Add more complex pooling layers and not the *max, avg* or *sum*.
--   Add the MagNet on a graph-level task to PyTorch
+- Define a Convolution over graphs that express local features and structures from a graph
+- Investigate on optimitzation algorithms, allowing to design complex Poolin layers
 
 # References
 
