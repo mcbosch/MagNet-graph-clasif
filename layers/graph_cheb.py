@@ -45,7 +45,6 @@ class MagNet_layer(nn.Module):
             self.weight = nn.Parameter(torch.FloatTensor(in_features, out_features)).to(device)
         else:
             self.weight = nn.Parameter(torch.FloatTensor(K+1, in_features, out_features)).to(device)
-
         if bias:
             self.bias = nn.Parameter(torch.FloatTensor(out_features)).to(device)
         else:
@@ -59,8 +58,14 @@ class MagNet_layer(nn.Module):
         valors massa disparats.
         '''
         
-        stdv = 1. / math.sqrt(self.weight.size(1))
-        self.weight.data.uniform_(-stdv, stdv)
+        
+        if self.order == 1 and self.simetric:
+            stdv = 1. / math.sqrt(self.weight.size(1))
+            self.weight.data.uniform_(-stdv, stdv)
+        else:
+            for pa in self.weight: 
+                stdv = 1. / math.sqrt(pa.size(1))
+                pa.data.uniform_(-stdv,stdv)
         if self.bias is not None:
             self.bias.data.uniform_(-stdv, stdv)
 
@@ -76,8 +81,8 @@ class MagNet_layer(nn.Module):
         
         I = torch.stack([torch.eye(sizes[1]) for _ in range(sizes[0])]).to(device=self.device)
         # Scale the magnetic laplacian with l_max ~ 2
+        
         if self.order == 1 and self.simetric:
-
             X_real = X_real.reshape(X_real.size()[0]*X_real.size()[1], X_real.size()[2])
             X_imag = X_imag.reshape(X_imag.size()[0]*X_imag.size()[1], X_imag.size()[2])
             X_real = torch.mm(X_real, self.weight) 
@@ -91,12 +96,41 @@ class MagNet_layer(nn.Module):
             output = [torch.bmm(H_real, X_real) - torch.bmm(H_imag,X_imag),torch.bmm(H_imag,X_real)+torch.bmm(H_real,X_imag)]
             
             if self.bias is not None:
-               output[0], output[1] = output[0] + self.bias, output[1] + self.bias
+               output[0] = output[0] + self.bias
 
             return output[0], output[1]
             
+        else:
+            Y_real = torch.zeros(sizes[0],sizes[1],sizes[2]).to(self.device)
+            Y_imag =  torch.zeros(sizes[0],sizes[1],sizes[2]).to(self.device)
+            H_real = I - L_real
+            H_imag = -L_imag
+            cheb_pols_real = [I, H_real]
+            cheb_pols_imag = [torch.zeros(sizes[0],sizes[1],sizes[2]).to(self.device), H_imag]
+            for i in range(self.order+1):
+                if i>1:
+                    Y_real = 2*(torch.bmm(L_real,cheb_pols_real[i-1])-torch.bmm(L_imag,cheb_pols_imag[i-1]))+cheb_pols_real[i-2]
+                    Y_imag = 2*(torch.bmm(L_real,cheb_pols_imag[i-1])+torch.bmm(L_imag,cheb_pols_real[i-1]))+cheb_pols_imag[i-2]
+                    cheb_pols_imag.append(Y_imag)
+                    cheb_pols_real.append(Y_real)
             
+            X_real_flat = X_real.reshape(X_real.size()[0]*X_real.size()[1], X_real.size()[2])
+            X_imag_flat = X_imag.reshape(X_imag.size()[0]*X_imag.size()[1], X_imag.size()[2])
+            output_real = torch.zeros(sizes[0],sizes[1],self.weight.size()[-1]).to(self.device)
+            output_imag = torch.zeros(sizes[0],sizes[1],self.weight.size()[-1]).to(self.device)
+            for i in range(self.order +1):
+                X_real_flat2 = torch.mm(X_real_flat, self.weight[i])
+                X_imag_flat2 = torch.mm(X_imag_flat, self.weight[i])
+                X_real2 = X_real_flat2.reshape(sizes[0], sizes[1], self.weight.size()[-1])
+                X_imag2 = X_imag_flat2.reshape(sizes[0], sizes[1], self.weight.size()[-1])
+                output_real = output_real + torch.bmm(cheb_pols_real[i], X_real2) - torch.bmm(cheb_pols_imag[i],X_imag2)
+                output_imag = output_imag + torch.bmm(cheb_pols_imag[i], X_real2) - torch.bmm(cheb_pols_real[i],X_imag2)
 
+            if self.bias is not None:
+               output_real= output_real + self.bias
+
+            return output_real, output_imag
+                
     def __repr__(self):
         return self.__class__.__name__ + '(' \
                     + str(self.in_features) +'->' \

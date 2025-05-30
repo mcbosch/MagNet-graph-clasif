@@ -12,18 +12,20 @@ from readouts.basic_readout import readout_function
 
 
 class MagNet(nn.Module):
-    def __init__(self, n_feat, n_class, n_layer, agg_hidden, fc_hidden, dropout, readout, device):
+    def __init__(self, n_feat, n_class, n_layer, agg_hidden, fc_hidden, dropout, readout, device, order = 1, simetric = True):
         super(MagNet, self).__init__()
 
         self.n_layer = n_layer
         self.dropout = dropout
         self.readout = readout
+        self.order = order
+        self.simetric = simetric
         self.CReLU = complex_relu_layer()
         
         # Graph convolution layer
         self.layers = nn.ModuleList([
-                MagNet_layer(n_feat, agg_hidden, device) if i == 0 else 
-                MagNet_layer(agg_hidden, agg_hidden, device) for i in range(n_layer)
+                MagNet_layer(n_feat, agg_hidden, device,K=order, simetric = simetric) if i == 0 else 
+                MagNet_layer(agg_hidden, agg_hidden, device,K=order, simetric = simetric) for i in range(n_layer)
             ])
         
         # Fully-connected layer
