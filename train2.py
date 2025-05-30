@@ -93,6 +93,11 @@ parser.add_argument('--dropout', type=float, default=0,
                     help='dropout rate of layer')
 parser.add_argument('--mag_q', type=float, default=0.25,
                     help='frequency for a MagNet Model')
+parser.add_argument('--order', type=int, default=1,
+                    help='Order of the Chebyshev polynomials')
+parser.add_argument('--simetric', type=bool, default=True,
+                    help='If the order = 1 this says if the coef that follows the var its the opposit\n'+
+                    'from the indep')
 
 #=================================================================================
 #          ENTRENAMENT      
@@ -216,7 +221,9 @@ for dataset_name in args.dataset_list:
                         fc_hidden=args.fc_hidden,
                         dropout=args.dropout,
                         readout=readout_name,
-                        device=device).to(device)    
+                        device=device,
+                        order=args.order,
+                        simetric=args.simetric).to(device)    
                                                               
             print(model)
             print('Readout:', readout_name)
