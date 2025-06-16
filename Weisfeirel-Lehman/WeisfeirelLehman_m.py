@@ -1,4 +1,3 @@
-import grakel as gl
 import numpy as np
 import sys
 
@@ -93,7 +92,7 @@ def graph_labeled(n,S,D,labels = dict(),grak = False):
     for i in range(len(S)):
         graph[D[i]].append(S[i])
 
-    return (graph, labels) if not grak else gl.Graph(graph, labels)
+    return (graph, labels) if not grak else (graph, labels)
 
 
 def matrix_dist(graphs, n_iter):
