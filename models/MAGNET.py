@@ -12,7 +12,17 @@ from readouts.basic_readout import readout_function
 
 
 class MagNet(nn.Module):
-    def __init__(self, n_feat, n_class, n_layer, agg_hidden, fc_hidden, dropout, readout, device, order = 1, simetric = True):
+    def __init__(self, 
+                 n_feat, 
+                 n_class, 
+                 n_layer, 
+                 agg_hidden, 
+                 fc_hidden, 
+                 dropout, 
+                 readout, 
+                 device, 
+                 order = 1, 
+                 simetric = True):
         super(MagNet, self).__init__()
 
         self.n_layer = n_layer
