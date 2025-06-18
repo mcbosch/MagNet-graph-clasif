@@ -87,4 +87,5 @@ def train_model(X, y, hidden_sizes=[64, 32], epochs=20, batch_size=32, lr=0.001)
     return model
 
 x, y, l = load_data(f'Weisfeirel-Lehman\\data\\data_base_n2.csv')
+
 train_model(x,y,[128,128], epochs=100)

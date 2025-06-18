@@ -1,5 +1,6 @@
 import numpy as np
 import sys
+import grakel
 
 def WeisferLheman(G, n_iter):
     r"""
@@ -92,7 +93,7 @@ def graph_labeled(n,S,D,labels = dict(),grak = False):
     for i in range(len(S)):
         graph[D[i]].append(S[i])
 
-    return (graph, labels) if not grak else (graph, labels)
+    return (graph, labels) if not grak else grakel.Graph(graph, labels)
 
 
 def matrix_dist(graphs, n_iter):

@@ -6,7 +6,7 @@ as vectors with the Weisfeirel-Lehman.
 import pandas as pd
 import numpy as np
 import os, sys
-import WeisfeirelLehman as wl
+import WeisfeirelLehman_m as wl
 
 organism_csv_Prok = pd.read_csv(f"..\\Prok\\data\\Results2.csv", 
                                usecols=["organism","Categories"], 
