@@ -20,7 +20,7 @@ class MagNet_layer(nn.Module):
                  simetric = True, 
                  Matrix = 'Laplacian_N', 
                  q = 0.25):
-
+    
         r"""
         To define this layer we use 
             Parameteers:

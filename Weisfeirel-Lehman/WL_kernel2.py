@@ -2,7 +2,7 @@ import numpy as np
 import sys
 import matplotlib as plt
 
-def WeisferLheman_kernel(G, n_iter):
+def WeisferLheman_kernel(G, n_iter, representation = False):
     r"""
     G is a list of graphs wich each graph is saved as:
         (g, lab), where:
@@ -25,31 +25,15 @@ def WeisferLheman_kernel(G, n_iter):
     
     L = list(first_labels)
     # A cada node li assignam lo que sirà la seva representació
-    if len(L) == 1:
-        labels_count = {k: {i: 0 for i in range(len(L))} for k in range(len(G))}
-        WL_inverse_labels = {L[i]: i for i in range(len(L))}
-
-        for k in range(len(G)):
-            g, l = G[k][0], G[k][1]
-            for v in g.keys(): 
-                # Assignam nou label a cada node
-                l[v] = WL_inverse_labels[l[v]]
-                # Sumam 1 a cada label
-                labels_count[k][l[v]]+=1
-            
-            for v in g.keys():
-                if labels_count[k][l[v]]==0: del(labels_count[k][l[v]])
-    else:
-        labels_count = {k: dict() for k in range(len(G))}
-        WL_inverse_labels = {L[i]: i for i in range(len(L))}
-
-        for k in range(len(G)):
-            g, l = G[k][0], G[k][1]
-            for v in g.keys(): 
-                # Assignam nou label a cada node
-                l[v] = WL_inverse_labels[l[v]]
-                # Sumam 1 a cada label
+    labels_count = {}
+    WL_inverse_labels = {L[i]: i for i in range(len(L))}
+    for k in range(len(G)):
+        g, l = G[k][0], G[k][1]
+        for v in g.keys(): 
+            # Assignam nou label a cada node
+            l[v] = WL_inverse_labels[l[v]]
     idx_labels = len(L)
+
     # Feim l'algoritme dek WeisfeirelLehman n_iter vegades
     for i in range(n_iter):
         labels_saved = set()
@@ -90,7 +74,8 @@ def WeisferLheman_kernel(G, n_iter):
             for i in actual_node_labels.keys():
                 labels_count[k][l[i]] += 1
 
-         
+    if representation: return labels_count
+    # Compute distances     
     for i in range(len(G)):
         for j in range(i,len(G)):
             k1 = set(list(labels_count[i].keys()))
@@ -117,6 +102,7 @@ def WeisferLheman_kernel(G, n_iter):
     sys.stdout.flush()
 
     return result
+
 
 def graph_labeled(n,S,D,labels = dict(),grak = False):
     r"""

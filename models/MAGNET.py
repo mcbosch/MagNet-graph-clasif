@@ -17,7 +17,6 @@ class MagNet(nn.Module):
                  n_class, 
                  n_layer, 
                  agg_hidden, 
-                 fc_hidden, 
                  dropout, 
                  readout, 
                  device, 
@@ -37,14 +36,12 @@ class MagNet(nn.Module):
                 MagNet_layer(n_feat, agg_hidden, device,K=order, simetric = simetric) if i == 0 else 
                 MagNet_layer(agg_hidden, agg_hidden, device,K=order, simetric = simetric) for i in range(n_layer)
             ])
-        
         # Fully-connected layer
         self.fc1 = nn.Linear(2*agg_hidden, agg_hidden)
         self.fc2 = nn.Linear(agg_hidden, n_class)
 
   
     def forward(self, data):
-
         x_real,x_imag, L_real, L_imag = data[:4]
 
 

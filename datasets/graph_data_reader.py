@@ -491,7 +491,7 @@ class GraphData(torch.utils.data.Dataset):
         return self.nested_list_to_torch([
                                     self.pad(self.features[index].copy(), self.N_nodes_max),  # Node_features
                                     self.pad(self.features_imag[index].copy(), self.N_nodes_max),
-                                    self.pad(self.adj_list[index], self.N_nodes_max, self.N_nodes_max),  # Adjacency matrix
+                                    self.pad(self.adj_list[index], self.N_nodes_max, self.N_nodes_max),  # Adjacency matrix (if we run adj2mag is real part)
                                     self.pad(self.imag_lapl[index], self.N_nodes_max, self.N_nodes_max), # Imag part
                                     graph_support,  # Mask with values of 0 for dummy (zero padded) nodes, otherwise 1 
                                     N_nodes,

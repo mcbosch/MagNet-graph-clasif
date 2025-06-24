@@ -75,19 +75,19 @@ for i in range(n):
         # Deinim un diccionari a mode de funció que assigna un nombre a cada node
         nodes = list(set(O_ADJ_csv['source'].to_list()).union(O_ADJ_csv['destination'].to_list()))
         map = {nodo: j for j, nodo in enumerate(nodes)}
+        L = {j: nodo for j, nodo in enumerate(nodes)}
         label_kingdom = {'Animals': 0, 'Archaea': 1, 'Plants': 2, 'Fungi': 3, 'Protists': 4}
         
         
         # Escrivim la matriu d'adjacencia en format sparse
-        S, D = [], []
-        L = {i: 'a' for i in range(len(nodes))}        
+        S, D = [], []       
         for idx, row in O_ADJ_csv.iterrows():
             o, d = map[O_ADJ_csv.loc[idx,'source']],map[O_ADJ_csv.loc[idx,'destination']] 
             S.append(o)
             D.append(d)
         
 
-        graphs.append(wl.graph_labeled(len(nodes), S, D, grak = False))
+        graphs.append(wl.graph_labeled(len(nodes), S, D, labels=L, grak = False))
 
         kingdoms.append(label_kingdom[kingdom])
         
@@ -109,25 +109,48 @@ emparejados_sorted = list(sorted(zip(y, G), key=lambda x: x[0]))
 
 G_ord = [g for _, g in emparejados_sorted]
 y_ord = [i for i, _ in emparejados_sorted]
-K = wlk.WeisferLheman_kernel(G_ord,3)
-dK = pd.DataFrame(K, columns=[f'g{i}' for i in range(len(G_ord))])
-labels = pd.DataFrame(y.sort(), columns=[f'g{i}' for i in range(len(G_ord))])
-dK.to_csv('kernel_matrix.csv')
-labels.to_csv('labels.csv')
-palette = sns.color_palette("pastel", 5)  # 6 colores diferentes
 
-colores_etiquetas = [palette[i] for i in y_ord]  # Asigna color a cada columna
-fig = plt.figure(figsize=(10,10))
+#######################
+representations = False
+#######################
 
-ax = sns.heatmap(K,
-            cmap="Reds",
-            cbar=True,
-            xticklabels=False,
-            yticklabels=False)
+if representations:
+    represen = wlk.WeisferLheman_kernel(G_ord,1,True)
+    g_repr = []
+    l_k = []
+    for k in range(len(G_ord)):
+        g_repr.append(str(list(represen[k].values())))
+        l_k.append(y_ord[k])
+    d_repr  = pd.DataFrame(
+        {
+            'Graphs':g_repr,
+            'Kingdom':l_k
+        }
+    )
+    d_repr.to_csv('wl_repr_1.csv',index=False)
+    
+else:
+    K = wlk.WeisferLheman_kernel(G_ord,3)
+
+    dK = pd.DataFrame(K, columns=[f'g{i}' for i in range(len(G_ord))])
+    labels = pd.DataFrame(y.sort(), columns=[f'g{i}' for i in range(len(G_ord))])
+
+    dK.to_csv('kernel_matrix.csv')
+    labels.to_csv('labels.csv')
+    palette = sns.color_palette("pastel", 5)  # 6 colores diferentes
+
+    colores_etiquetas = [palette[i] for i in y_ord]  # Asigna color a cada columna
+    fig = plt.figure(figsize=(10,10))
+
+    ax = sns.heatmap(K,
+                cmap="viridis",
+                cbar=True,
+                xticklabels=False,
+                yticklabels=False)
 
 
 
-plt.title('Semblances m-DAG')
-plt.tight_layout()
-plt.savefig('heat_map_kernels.png')
-plt.show()
+    plt.title('Semblances m-DAG')
+    plt.tight_layout()
+    plt.savefig('heat_map_kernels.png')
+    plt.show()

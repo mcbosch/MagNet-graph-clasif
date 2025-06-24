@@ -72,12 +72,12 @@ for i in range(n):
         # Deinim un diccionari a mode de funció que assigna un nombre a cada node
         nodes = list(set(O_ADJ_csv['source'].to_list()).union(O_ADJ_csv['destination'].to_list()))
         map = {nodo: j for j, nodo in enumerate(nodes)}
+        L = {j: str(nodo) for j, nodo in enumerate(nodes)}
         label_kingdom = {'Animals': 0, 'Archaea': 1, 'Plants': 2, 'Fungi': 3, 'Protists': 4}
         
         
         # Escrivim la matriu d'adjacencia en format sparse
-        S, D = [], []
-        L = {i: 'a' for i in range(len(nodes))}        
+        S, D = [], []   
         for idx, row in O_ADJ_csv.iterrows():
             o, d = map[O_ADJ_csv.loc[idx,'source']],map[O_ADJ_csv.loc[idx,'destination']] 
             S.append(o)
@@ -107,8 +107,9 @@ y_ord = [i for i, _ in emparejados_sorted]
 
 
 # Usa el kernel VertexHistogram (basado en etiquetas de nodos)
-gk = WeisfeilerLehman(n_iter=5,base_graph_kernel=VertexHistogram,normalize=True)
+gk = WeisfeilerLehman(n_iter=5,base_graph_kernel=VertexHistogram, normalize=True)
 print(gk)
+
 # Calcula la matriz de semejanza
 K = gk.fit_transform(G_ord)
 print(K)
@@ -122,7 +123,7 @@ colores_etiquetas = [palette[i] for i in y_ord]  # Asigna color a cada columna
 fig = plt.figure(figsize=(10,10))
 
 ax = sns.heatmap(K,
-            cmap="Reds",
+            cmap="viridis",
             cbar=True,
             xticklabels=False,
             yticklabels=False)

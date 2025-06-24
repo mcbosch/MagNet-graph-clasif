@@ -21,11 +21,12 @@ import torch.optim.lr_scheduler as lr_scheduler
 from datasets.graph_data_reader import DataReader, GraphData
 from models.GCN import GCN
 from models.MAGNET import MagNet
+from models.magnet_2 import MagNet2
 
 # Codi per guardar resultats
 from utils import create_directory, save_result_csv
 
-model_list = ['GCN', 'MAGNET']
+model_list = ['GCN', 'MAGNET', 'magnet_2']
 dataset_list = ['PROTEINS', 'RGRAPH', 'MDAG','MDAG_LC']
 readout_list = ['max', 'avg', 'sum', 'complex_max', 'complex_avg', 'complex_sum']
 
@@ -98,10 +99,11 @@ parser.add_argument('--order', type=int, default=1,
 parser.add_argument('--simetric', type=bool, default=True,
                     help='If the order = 1 this says if the coef that follows the var its the opposit\n'+
                     'from the indep')
+parser.add_argument('--freqs', type=list, default=[])
 
 #=================================================================================
 #          ENTRENAMENT      
-#=================================================================================
+#=================================================================================f
 
 # Lletgim els arguments que ha introduit l'usuari
 args = parser.parse_args()
@@ -218,12 +220,23 @@ for dataset_name in args.dataset_list:
                         n_class=datareader.data['n_classes'],
                         n_layer=args.n_agg_layer,
                         agg_hidden=args.agg_hidden,
-                        fc_hidden=args.fc_hidden,
                         dropout=args.dropout,
                         readout=readout_name,
                         device=device,
                         order=args.order,
+                        simetric=args.simetric).to(device)  
+            elif model_name == 'magnet_2':
+                model = MagNet2(n_feat=datareader.data['features_dim'],
+                        n_class=datareader.data['n_classes'],
+                        n_layer=args.n_agg_layer,
+                        agg_hidden=args.agg_hidden,
+                        dropout=args.dropout,
+                        readout=readout_name,
+                        device=device,
+                        order=args.order,
+                        freq=[[1,2,3,4,5,6,7,8,9,10,11,12],[1,2,3,4,5,6,7,8,9,10,11,12]],
                         simetric=args.simetric).to(device)    
+                                                            
                                                               
             print(model)
             print('Readout:', readout_name)
