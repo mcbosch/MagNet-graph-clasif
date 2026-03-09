@@ -4,7 +4,7 @@ Graph classification framework using **Magnetic Graph Neural Networks (MagNet)**
 
 Spectral filtering is a technique from Graph Signal Processing ([GSP](https://www.sciencedirect.com/science/article/pii/S1063520310000552)) that extracts information from signals over graphs. To extend it to directed graphs, we use the **Magnetic Laplacian**, which encodes edge direction as a complex phase factor on a symmetrised adjacency matrix. We adapt the node/edge-level [MagNet](https://arxiv.org/pdf/2102.11391) architecture for **graph-level classification** by adding a readout layer.
 
-More information in the bachelor's thesis [TFG](https://www.linkedin.com/feed/update/urn:li:activity:7357046887759114240/).
+More information and results in the bachelor's thesis [TFG](https://www.linkedin.com/feed/update/urn:li:activity:7357046887759114240/).
 
 ![Architecture MAGNET](esquema.jpg)
 
@@ -327,20 +327,7 @@ save_model/{model}/*.pt                              # Saved weights (if --save_
 ```
 
 ---
-
-## 8. Results
-
-`test_result/MAGNET/MAGNET_2_h32_10_cross_validation.csv` (partial run, 4 of 10 folds completed):
-
-| Dataset  | Readout     | Fold 1 | Fold 2 | Fold 3 | Fold 4 | Std  |
-|----------|-------------|--------|--------|--------|--------|------|
-| PROTEINS | complex_avg | 60.92  | 59.57  | 58.22  | 59.57  | 1.35 |
-
-Config: 2 layers, hidden dim 32, `complex_avg` readout.
-
----
-
-## 9. How to Run
+## 8. How to Run
 
 ### Step 1 — Preprocess raw organism data
 
@@ -392,7 +379,7 @@ test_result/MAGNET/MAGNET_2_h64_10_cross_validation.csv
 
 ---
 
-## 10. References
+## 9. References
 
 - MagNet paper: [arXiv:2102.11391](https://arxiv.org/pdf/2102.11391)
 - Base GNN code: [graph-neural-networks-for-graph-classification](https://github.com/qbxlvnf11/graph-neural-networks-for-graph-classification)
